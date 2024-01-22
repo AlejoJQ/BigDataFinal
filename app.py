@@ -6,16 +6,13 @@ import cv2
 import numpy as np
 from flask_cors import CORS
 
-# Inicializar la aplicación Flask
 app = Flask(_name_)
 CORS(app, origins="*")
 
-# Configurar la carpeta de archivos
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MODEL_PATH'] = os.path.join('src', 'cnn', 'model_Fashion.h5')
 
-# Cargar el modelo de Keras una sola vez para mejorar el rendimiento
-model = load_model(app.config['MODEL_PATH'])
+model = load_model(app.config['files'])
 
 # Diccionario de nombres de clases
 class_names = {
@@ -31,12 +28,10 @@ class_names = {
     9: 'Ankle boot/Botín'
 }
 
-# Ruta para mostrar la página principal
 @app.route("/")
 def show_homepage():
     return render_template('index.html')
 
-# Ruta para realizar predicciones
 @app.route("/predict", methods=['POST'])
 def predict_image():
     if 'image' not in request.files:
@@ -67,9 +62,7 @@ def predict_image():
         return jsonify({"message": "error", "error": str(e)}), 500
     
     finally:
-        os.remove(filepath)  # Asegurarse de eliminar la imagen después de la predicción
+        os.remove(filepath)  
 
-# Punto de entrada principal
 if _name_ == '_main_':
-    # No habilitar el modo debug en producción
     app.run()
