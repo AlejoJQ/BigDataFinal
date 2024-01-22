@@ -6,10 +6,18 @@ import cv2
 import numpy as np
 from flask_cors import CORS
 
-app = Flask(_name)  # Corregido: __name_ en vez de name
-cors = CORS(app, origins="*")
-app.config['files'] = os.path.join(os.path.dirname(_file), 'src', 'files')  # Corregido: __file_ en vez de file
+# Inicializar la aplicación Flask
+app = Flask(_name_)
+CORS(app, origins="*")
 
+# Configurar la carpeta de archivos
+app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['MODEL_PATH'] = os.path.join('src', 'cnn', 'model_Fashion.h5')
+
+# Cargar el modelo de Keras una sola vez para mejorar el rendimiento
+model = load_model(app.config['MODEL_PATH'])
+
+# Diccionario de nombres de clases
 class_names = {
     0: 'T-shirt/camiseta',
     1: 'Trouser/Pantalon',
@@ -23,80 +31,45 @@ class_names = {
     9: 'Ankle boot/Botín'
 }
 
-def save_image(image) -> str:
-    filename = secure_filename(image.filename)
-    filepath = os.path.join(app.config['files'], filename)
-    image.save(filepath)
-
-    return filepath
-
-def predict_image(image_file):
-    try:
-        filepath = save_image(image_file)
-        model_path = os.path.join(os.path.dirname(_file_), 'src', 'cnn', 'model_Fashion.h5')
-        model = load_model(model_path)
-
-        img = cv2.imread(filepath)
-        gray = np.dot(img[..., :3], [0.299, 0.587, 0.114])
-
-        gray = gray.reshape(1, 28, 28, 1)
-        gray /= 255
-
-        prediction = model.predict(gray.reshape(1, 28, 28, 1))
-
-        predicted_class = int(prediction.argmax())
-
-        class_name = class_names.get(predicted_class, 'Clase Desconocida')
-
-        return jsonify({
-            "message": "ok",
-            "prediction": class_name
-        })
-
-    except Exception as e:
-        return jsonify({
-            "message": "error",
-            "error": str(e)
-        }), 500
-
-@app.get("/")
+# Ruta para mostrar la página principal
+@app.route("/")
 def show_homepage():
     return render_template('index.html')
 
-@app.post("/predict")
+# Ruta para realizar predicciones
+@app.route("/predict", methods=['POST'])
 def predict_image():
-    image_file = request.files['image']
+    if 'image' not in request.files:
+        return jsonify({"message": "error", "error": "No image part"}), 400
+    
+    image = request.files['image']
+    if image.filename == '':
+        return jsonify({"message": "error", "error": "No selected image"}), 400
+    
+    filename = secure_filename(image.filename)
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    image.save(filepath)
+    
+    try:
+        img = cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
+        img = cv2.resize(img, (28, 28))
+        img = img.reshape(1, 28, 28, 1)
+        img = img.astype('float32')
+        img /= 255
 
-    # Valida la solicitud
-    if not request.is_json:
-        return jsonify({
-            "message": "Error: la solicitud no es JSON válida."
-        })
+        prediction = model.predict(img)
+        predicted_class = int(prediction.argmax())
+        class_name = class_names.get(predicted_class, 'Clase Desconocida')
 
-    data = request.get_json()
-    if not data:
-        return jsonify({
-            "message": "Error: la solicitud no contiene datos."
-        })
+        return jsonify({"message": "ok", "prediction": class_name})
 
-    image_file = data.get("image")
-    if not image_file:
-        return jsonify({
-            "message": "Error: la solicitud no contiene la imagen."
-        })
+    except Exception as e:
+        return jsonify({"message": "error", "error": str(e)}), 500
+    
+    finally:
+        os.remove(filepath)  # Asegurarse de eliminar la imagen después de la predicción
 
-    # Valida la imagen
-    if not image_file:
-        return jsonify({
-            "message": "Error: no se ha enviado ninguna imagen."
-        })
-
-    if not image_file.filename.endswith('.jpg') and not image_file.filename.endswith('.png'):
-        return jsonify({
-            "message": "Error: la imagen debe tener el formato .jpg o .png."
-        })
-
-    return predict_image(image_file)
-
+# Punto de entrada principal
 if _name_ == '_main_':
-    app.run(debug=True)
+    # No habilitar el modo debug en producción
+    app.run()
