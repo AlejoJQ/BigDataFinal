@@ -72,4 +72,4 @@ def predict_image():
 
 
 if _name_ == '_main_':
-  app.run(debug=False)
+  app.run(debug=true)
