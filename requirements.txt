@@ -1,0 +1,3 @@
+numpy==1.25.5  # Assuming latest version as of today
+tensorflow==2.15.0  # Assuming latest version as of today
+matplotlib==3.7.1  # Assuming latest version as of today
