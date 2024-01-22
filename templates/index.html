@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Predicción de Dígitos</title>
+    <title>Predicción de Prendas</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-      body {
+    <style>
+             body {
           font-family: 'Roboto', sans-serif;
           background-color: #f4f7f6;
           margin: 0;
@@ -109,88 +109,90 @@
           font-weight: bold;
           color: #000;
       }
-  </style>
+    </style>
 </head>
 <body>
-  <div class="container">
-      <h1>Descubre el tipo de prenda</h1>
-      <p>¡Sube una imagen y déjanos adivinar el tipo de prenda por ti!</p>
-      
-      <div class="upload-wrapper" id="upload-wrapper">
-          <span>Arrastra y suelta tu imagen aquí o haz clic para seleccionarla</span>
-          <input type="file" id="file-upload" name="image" accept="image/*" style="display: none;" required>
-      </div>
-      
-      <button id="predict-button" type="button">Obtener Predicción</button>
-      
-      <div class="image-preview" id="image-preview"></div>
-      <div class="prediction-result" id="prediction-result">
-          <p>Predicción: <span id="prediction-value">-</span></p>
-      </div>
-  </div>
+    <div class="container">
+        <h1>Descubre el tipo de prenda</h1>
+        <p>¡Sube una imagen y déjanos adivinar el tipo de prenda por ti!</p>
+        
+        <div class="upload-wrapper" id="upload-wrapper">
+            <span>Arrastra y suelta tu imagen aquí o haz clic para seleccionarla</span>
+            <input type="file" id="file-upload" name="image" accept="image/*" hidden required>
+        </div>
+        
+        <button id="predict-button" type="button">Obtener Predicción</button>
+        
+        <div class="image-preview" id="image-preview"></div>
+        <div class="prediction-result" id="prediction-result">
+            <p>Predicción: <span id="prediction-value">-</span></p>
+        </div>
+    </div>
 
-  <script>
-      const fileUpload = document.getElementById('file-upload');
-      const predictButton = document.getElementById('predict-button');
-      const imagePreview = document.getElementById('image-preview');
-      const predictionResult = document.getElementById('prediction-result');
-      const predictionValue = document.getElementById('prediction-value');
-      const uploadWrapper = document.getElementById('upload-wrapper');
+    <script>
+        const fileUpload = document.getElementById('file-upload');
+        const predictButton = document.getElementById('predict-button');
+        const imagePreview = document.getElementById('image-preview');
+        const predictionResult = document.getElementById('prediction-result');
+        const predictionValue = document.getElementById('prediction-value');
+        const uploadWrapper = document.getElementById('upload-wrapper');
 
-      // Abrir el cuadro de diálogo de archivos al hacer clic en el contenedor
-      uploadWrapper.addEventListener('click', function() {
-          fileUpload.click();
-      });
+        // Abrir el cuadro de diálogo de archivos al hacer clic en el contenedor
+        uploadWrapper.addEventListener('click', function() {
+            fileUpload.click();
+        });
 
-      // Actualizar la previsualización de la imagen
-      function updateImagePreview(file) {
-          const reader = new FileReader();
-          reader.onload = function(event) {
-              imagePreview.innerHTML = '<img src="' + event.target.result + '" alt="Imagen seleccionada" />';
-              predictionResult.style.display = 'none'; // Ocultar resultados anteriores
-          };
-          reader.readAsDataURL(file);
-      }
+        // Actualizar la previsualización de la imagen
+        function updateImagePreview(file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                imagePreview.innerHTML = '<img src="' + event.target.result + '" alt="Imagen seleccionada" />';
+                predictionResult.style.display = 'none'; // Ocultar resultados anteriores
+            };
+            reader.readAsDataURL(file);
+        }
 
-      // Manejar la selección de archivos con el input
-      fileUpload.addEventListener('change', function() {
-          if (this.files.length > 0) {
-              updateImagePreview(this.files[0]);
-          }
-      });
+        // Manejar la selección de archivos con el input
+        fileUpload.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                updateImagePreview(this.files[0]);
+            }
+        });
 
-      // Manejar la funcionalidad de arrastrar y soltar
-      uploadWrapper.addEventListener('dragover', function(event) {
-          event.preventDefault();
-          uploadWrapper.classList.add('drag-over');
-      });
+        // Manejar la funcionalidad de arrastrar y soltar
+        uploadWrapper.addEventListener('dragover', function(event) {
+            event.preventDefault();
+            uploadWrapper.classList.add('drag-over');
+        });
 
-      uploadWrapper.addEventListener('dragleave', function(event) {
-          uploadWrapper.classList.remove('drag-over');
-      });
+        uploadWrapper.addEventListener('dragleave', function(event) {
+            uploadWrapper.classList.remove('drag-over');
+        });
 
-      uploadWrapper.addEventListener('drop', function(event) {
-          event.preventDefault();
-          uploadWrapper.classList.remove('drag-over');
-          if (event.dataTransfer.files.length > 0) {
-              fileUpload.files = event.dataTransfer.files;
-              updateImagePreview(event.dataTransfer.files[0]);
-          }
-      });
+        uploadWrapper.addEventListener('drop', function(event) {
+            event.preventDefault();
+            uploadWrapper.classList.remove('drag-over');
+            if (event.dataTransfer.files.length > 0) {
+                fileUpload.files = event.dataTransfer.files;
+                updateImagePreview(event.dataTransfer.files[0]);
+            }
+        });
 
-      // Evento del botón de predicción
-      predictButton.addEventListener('click', function() {
-          if (fileUpload.files.length > 0) {
-              const formData = new FormData();
-              formData.append('image', fileUpload.files[0]);
-              console.log(formData)
-              fetch('/predict', {
-                  method: 'POST',
-                  body: formData,
-              })
-              .then(response => response.json())
+        // Evento del botón de predicción
+        predictButton.addEventListener('click', function() {
+            if (fileUpload.files.length > 0) {
+                const formData = new FormData();
+                formData.append('image', fileUpload.files[0]);
+
+                // Mostrar un mensaje o animación de carga aquí
+                // Por ejemplo: predictionValue.textContent = 'Cargando...';
+
+                fetch('/predict', {
+                    method: 'POST',
+                    body: formData,
+                })
+                .then(response => response.json())
                 .then(data => {
-                    console.log(data)
                     if (data.message === "ok") {
                         predictionResult.style.display = 'block';
                         predictionValue.textContent = data.prediction;
@@ -199,15 +201,15 @@
                         alert('Error al procesar la imagen: ' + data.error);
                     }
                 })
-              .catch(error => {
-                  predictionResult.style.display = 'block';
-                  predictionValue.textContent = 'Ups, algo salió mal.';
-                  console.error('Error:', error);
-              });
-          } else {
-              alert('Por favor, selecciona una imagen primero.');
-          }
-      });
-  </script>
+                .catch(error => {
+                    predictionResult.style.display = 'block';
+                    predictionValue.textContent = 'Ups, algo salió mal.';
+                    console.error('Error:', error);
+                });
+            } else {
+                alert('Por favor, selecciona una imagen primero.');
+            }
+        });
+    </script>
 </body>
 </html>
