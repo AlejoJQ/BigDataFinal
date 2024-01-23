@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Detector de Animales</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 700px;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            text-align: center;
+            color: #5cb85c;
+        }
+
+        form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .upload-wrapper {
+            background-color: #f8f9fa;
+            border: 2px dashed #ddd;
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s;
+            width: 100%;
+        }
+
+        .upload-wrapper:hover {
+            border-color: #5cb85c;
+        }
+
+        .upload-wrapper input[type=file] {
+            display: none;
+        }
+
+        .upload-wrapper_Text {
+            font-size: 16px;
+            color: #666;
+        }
+
+        #image-container {
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+            width: 100%;
+        }
+
+        #selected-image {
+            max-height: 300px;
+            max-width: 100%;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #predict-button {
+            width: 100%;
+            background-color: #5cb85c;
+            color: white;
+            padding: 15px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            display: none; /* Asegúrate de que este botón se muestre solo cuando sea necesario */
+        }
+
+        #predict-button:hover {
+            background-color: #4cae4c;
+        }
+
+        .result-container {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            background-color: #e9ecef;
+            text-align: center;
+        }
+
+        .result-container h2 {
+            margin: 0;
+            font-weight: bold;
+            color: #000;
+        }
+    </style>
+</head>
+
+
+<body>
+    <div class="container">
+        <h1>Detector de Tipos de prenda</h1>
+
+        <form action="/" method="post" enctype="multipart/form-data">
+            <label class="upload-wrapper">
+                <span class="upload-wrapper_Text">Arrastra y suelta tu imagen aquí o haz clic para seleccionarla</span>
+                <input id="file-input" type="file" name="image" accept="image/*" onchange="displayImage()">
+            </label>
+            <div id="image-container" {% if selected_image_path %}style="display:block;" {% endif %}>
+                <img id="selected-image" src="{{ selected_image_path }}" alt="Selected Image">
+                <button id="predict-button" type="submit" {% if not selected_image_path %}style="display:none;" {% endif
+                    %}>Predecir</button>
+            </div>
+        </form>
+
+        <div class="result-container">
+            {% if class_name %}
+            <h2>{{ class_name }}</h2>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function displayImage() {
+            var input = document.getElementById('file-input');
+            var selectedImage = document.getElementById('selected-image');
+            var predictButton = document.getElementById('predict-button');
+            var imageContainer = document.getElementById('image-container');
+
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    selectedImage.src = e.target.result;
+                    imageContainer.style.display = 'block';
+                    predictButton.style.display = 'block';
+                };
+
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                // Mostrar la imagen inicial cuando no se selecciona ninguna imagen
+                selectedImage.src = "{{ initial_image_path }}";
+                imageContainer.style.display = 'block';
+                predictButton.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+
+</html>
